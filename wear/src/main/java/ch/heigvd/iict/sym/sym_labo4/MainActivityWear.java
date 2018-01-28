@@ -6,10 +6,25 @@ import android.support.wearable.activity.WearableActivity;
 
 import com.bozapro.circularsliderrange.CircularSliderRange;
 import com.bozapro.circularsliderrange.ThumbEvent;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 
 import ch.heigvd.iict.sym.sym_labo4.widgets.CircularSliderRangeFixed;
 
 public class MainActivityWear extends WearableActivity {
+
+    /* 3 clés différentes pour représenter une coloueur (RGB)
+    *  Valeurs échangées avec l'application mobile */
+    private static final String R_KEY = "r";
+    private static final String G_KEY = "g";
+    private static final String B_KEY = "b";
+
+    private DataClient mDataClient;
 
     private static final String TAG = MainActivityWear.class.getSimpleName();
 
@@ -86,10 +101,7 @@ public class MainActivityWear extends WearableActivity {
 
         updateColor();
 
-        /* A IMPLEMENTER */
     }
-
-    /* A IMPLEMENTER */
 
     @Override
     public void onEnterAmbient(Bundle ambientDetails) {
@@ -123,11 +135,22 @@ public class MainActivityWear extends WearableActivity {
      *  You need to send them to the smartphone application using DataLayer API
      */
     private void updateColor() {
+
         int r = (int) Math.round(255 * ((endAngleRed   - startAngleRed)   % 360) / 360.0);
         int g = (int) Math.round(255 * ((endAngleGreen - startAngleGreen) % 360) / 360.0);
         int b = (int) Math.round(255 * ((endAngleBlue  - startAngleBlue)  % 360) / 360.0);
 
-        /* A IMPLEMENTER */
+        /*  Utilisation des Data items pour partager les changements de couleurs depuis le wearable. */
+        // Création de l'objet (=RGB) PutDataMapRequest en spécifiants
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/color");
+        /* On ajoute les 3 compostantes de la couleur */
+        putDataMapReq.getDataMap().putInt(R_KEY, r);
+        putDataMapReq.getDataMap().putInt(G_KEY, g);
+        putDataMapReq.getDataMap().putInt(B_KEY, b);
+        /* Obtenir un PutDataRequest */
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
+
     }
 
 }
